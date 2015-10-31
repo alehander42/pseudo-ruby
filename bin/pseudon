@@ -1,3 +1,17 @@
 #!/usr/bin/env ruby
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 require 'pseudon'
+
+def translate
+  filename = ARGV.first
+  source = File.read filename
+  clj = Pseudon.translate source
+  File.write "#{filename}.clj", clj
+end
+
+if ARGV.empty?
+  puts 'pseudon <filename>'
+  exit
+end
+
+translate
