@@ -10,7 +10,7 @@ This python to pseudon translator would add automatic support for
   * ruby to perl
   * ruby to any other pseudon-supported language
 
-[pseudon compiler](https://github.com/alehande42/pseudon)
+[pseudon compiler](https://github.com/alehander42/pseudon)
 
 ## supported subset
 
