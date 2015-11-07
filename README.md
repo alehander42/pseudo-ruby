@@ -1,4 +1,4 @@
-#pseudon-python
+#pseudon-ruby
 
 a ruby to pseudon translator
 
