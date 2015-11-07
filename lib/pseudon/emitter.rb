@@ -2,9 +2,7 @@ require 'parser/current'
 require_relative 'templates'
 
 module Pseudon
-  module_function :emit
-
-  def emit(node)
+  def self.emit(node)
     Emitter.new(TEMPLATES).emit_cell node
   end
 
@@ -15,20 +13,29 @@ module Pseudon
     end
 
     def emit_cell(node, depth = 0)
-      "(Cell\n#{emit_nodes(node.children, "\n", 1)})\n"
+      a = node.type == :begin ? node.children : [node]
+      "(Cell\n#{emit_nodes(a, "\n", 1)})\n"
     end
 
     def emit_node(node, depth = 0)
-      (@offset * depth ) + if node.is_a?(Parser::AST::Node)
-        emit_template @templates[node.kind], node, depth
+      (@offset * depth ) + if node.is_a?(AST::Node)
+        emit_template @templates[node.type], node, depth
       else
         node.to_s
       end
     end
 
     def emit_template(template, node, depth = 0)
+      placeholders = template.scan /%{\d+}/
+      result = template
+      placeholders.reduce(template) do |out, q|
+        child = emit_node(node.children[q[2..-2].to_i])
+        out.gsub(q, child)
+      end
+    end
 
     def emit_nodes(nodes, sep, depth = 0)
-      sep.join(nodes.map { |node| emit_node(node, depth) })
+      nodes.map { |node| emit_node(node, depth) }.join(sep)
     end
+  end
 end
