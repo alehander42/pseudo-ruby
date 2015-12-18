@@ -1,8 +1,9 @@
 require_relative 'pseudon/parser'
 require_relative 'pseudon/emitter'
+require 'yaml'
 
 module Pseudon
   def self.translate(source)
-    Pseudon.emit(Pseudon.parse(source))
+    YAML.dump(Pseudon.emit(Pseudon.parse(source)))
   end
 end

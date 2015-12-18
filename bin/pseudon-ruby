@@ -6,11 +6,11 @@ def translate
   filename = ARGV.first
   source = File.read filename
   clj = Pseudon.translate source
-  File.write "#{filename}.clj", clj
+  File.write "#{filename.split('.')[0..-2].join('.')}.pseudon.yaml", clj
 end
 
 if ARGV.empty?
-  puts 'pseudon <filename>'
+  puts 'pseudon-ruby <filename>'
   exit
 end
 

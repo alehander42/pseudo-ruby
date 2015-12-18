@@ -1,41 +1,58 @@
 require 'parser/current'
-require_relative 'templates'
 
 module Pseudon
   def self.emit(node)
-    Emitter.new(TEMPLATES).emit_cell node
+    Emitter.new.emit_program node
   end
 
   class Emitter
-    def initialize(templates, offset = 2)
-      @offset = ' ' * offset
-      @templates = templates
+    def initialize()
+      @in_class = false
     end
 
-    def emit_cell(node, depth = 0)
+    def emit_program(node)
       a = node.type == :begin ? node.children : [node]
-      "(Cell\n#{emit_nodes(a, "\n", 1)})\n"
+      emit a
     end
 
-    def emit_node(node, depth = 0)
-      (@offset * depth ) + if node.is_a?(AST::Node)
-        emit_template @templates[node.type], node, depth
+    private
+
+    def emit(node)
+      if node.is_a? AST::Node
+        # p node, node.type
+        send :"emit_#{node.type.downcase}", node
+      elsif node.is_a? Array
+        node.map &method(:emit)
       else
-        node.to_s
+        node
       end
     end
 
-    def emit_template(template, node, depth = 0)
-      placeholders = template.scan /%{\d+}/
-      result = template
-      placeholders.reduce(template) do |out, q|
-        child = emit_node(node.children[q[2..-2].to_i])
-        out.gsub(q, child)
+    def emit_int(node)
+      {type: 'int', value: node.children[0]}
+    end
+
+    def emit_send(node)
+      if node.children.length == 2
+        if node.children[0].nil?
+          {type: 'local', name: node.children[1]}
+        else
+          {type: 'attr', receiver: emit(node.children[0]), slot: node.children[1]}
+        end
+      else
+        if node.children[0].nil?
+          {type: 'call', handler: node.children[1], args: emit(node.children[2..-1])}
+        else
+          {type: 'method_call', receiver: emit(node.children[0]), message: node.children[1], args: emit(node.children[2..-1])}
+        end
       end
     end
 
-    def emit_nodes(nodes, sep, depth = 0)
-      nodes.map { |node| emit_node(node, depth) }.join(sep)
+    def emit_def(node)
+      type = @in_class ? 'method' : 'function'
+      args = node.children[1].children.map { |arg| {type: 'local', name: arg.children[0]} }
+      arg_type_hints = args.map { '@unknown' }
+      {type: type, args: emit(args), body: emit(node.children[2]), type_hint: arg_type_hints + ['@unknown']}
     end
   end
 end

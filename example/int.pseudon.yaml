@@ -1,0 +1,11 @@
+---
+- :type: function
+  :args:
+  - :type: local
+    :name: :e
+  :body:
+    :type: int
+    :value: 2
+  :type_hint:
+  - "@unknown"
+  - "@unknown"
